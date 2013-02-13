@@ -67,6 +67,9 @@ int main(int argc, char **argv)
     		}
 	    }
 
+	    // Next time step
+	    num_steps++;
+
 	    double turnrate = 0.1;
 	    double speed = 0.1;
 	    pp.SetSpeed(speed, turnrate);
