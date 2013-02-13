@@ -6,6 +6,11 @@
 #include "cmdline_parsing.h"
 #include "common_functions.h"
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cmath>
+
 using namespace PlayerCc;
 using namespace std;
 
@@ -13,6 +18,8 @@ int main(int argc, char **argv)
 {
   /* Calls the command line parser */
   parse_args(argc, argv);
+
+  ofstream data_file("data.txt");
 
   try {
   	/* Initialize connection to player */
@@ -24,6 +31,7 @@ int main(int argc, char **argv)
 	  if(!check_robot_connection(robot, pp, 20)) 
 	  	exit(-2);
   
+      int num_steps = 0;
 	  // Now we start the main processing loop
 	  while(1) {
 	    // read from the proxies; YOU MUST ALWAYS HAVE THIS LINE
@@ -35,8 +43,15 @@ int main(int argc, char **argv)
 	  	vector<double> range_data(n);
 	  	vector<double> bearing_data(n);
 	    for(uint i=0; i<n; i++) {
+
 	      range_data[i] = lp.GetRange(i);
 	      bearing_data[i] = lp.GetBearing(i);
+
+	      if (num_steps == 5) {
+              data_file << range_data[i];
+              data_file << bearing_data[i];
+              num_steps = 0;
+	      }
 	    }
     
 	    // Now laser range data can be accessed as a double vector, e.g. range_data[i] 
