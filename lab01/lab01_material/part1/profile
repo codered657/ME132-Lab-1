@@ -1,6 +1,6 @@
 #### Personal settings
 
-export MY_PORT_NUMBER=ask_the_tas_for_the_number
+export MY_PORT_NUMBER=7000
 
 #### Settings common for everybody
 

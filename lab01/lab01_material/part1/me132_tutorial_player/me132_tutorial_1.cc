@@ -57,8 +57,8 @@ int main(int argc, char **argv)
 	    // Now laser range data can be accessed as a double vector, e.g. range_data[i] 
 	    // and bearing_data[i].
 
-	    double turnrate = 1;
-	    double speed = 1;
+	    double turnrate = 0.1;
+	    double speed = 0.1;
 	    pp.SetSpeed(speed, turnrate);
     
 	  }
