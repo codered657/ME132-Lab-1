@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
 	      if (num_steps == 5) {
               data_file << range_data[i];
-              data_file << bearing_data[i];
+              data_file << bearing_data[i] << endl;
               num_steps = 0;
 	      }
 	    }
