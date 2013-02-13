@@ -32,6 +32,7 @@ int main(int argc, char **argv)
 	  	exit(-2);
   
       int num_steps = 0;
+
 	  // Now we start the main processing loop
 	  while(1) {
 	    // read from the proxies; YOU MUST ALWAYS HAVE THIS LINE
@@ -47,15 +48,24 @@ int main(int argc, char **argv)
 	      range_data[i] = lp.GetRange(i);
 	      bearing_data[i] = lp.GetBearing(i);
 
-	      if (num_steps == 5) {
-              data_file << range_data[i];
-              data_file << bearing_data[i] << endl;
-              num_steps = 0;
-	      }
 	    }
     
 	    // Now laser range data can be accessed as a double vector, e.g. range_data[i] 
 	    // and bearing_data[i].
+
+	    if (num_steps%5 == 0) {
+
+	    	// Print out time and number of points
+	    	data_file << "time: " << num_steps << endl;
+	    	data_file << "points: " << range_data.size() << endl;
+
+    		for (int j = 0; j < range_data.size(); j++) {
+
+    			// Print out range and bearing data
+    			data_file << "[" << range_data[j] << ", " << bearing_data[j] << "]" << endl;
+
+    		}
+	    }
 
 	    double turnrate = 0.1;
 	    double speed = 0.1;
