@@ -48,8 +48,8 @@ int main(int argc, char **argv)
             // In this example, we just set it to 1 m/s in speed and 1 rad/s 
 			// in turnrate since we are dealing with two-wheeled non-holonomic 
 			// dynamics in our robots
-            double speed= 1; // m/s
-            double turnrate = 1; // rad/s
+            double speed= 0.1; // m/s
+            double turnrate = 0.1; // rad/s
         
             // control the robot by setting motion commands here
             pp.SetSpeed(speed, turnrate);
