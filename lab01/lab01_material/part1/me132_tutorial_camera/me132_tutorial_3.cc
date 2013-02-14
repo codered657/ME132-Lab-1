@@ -178,10 +178,14 @@ int main(int argc, char** argv)
         bb.disparityToXYZ(row, col, disp, &x, &y, &z);
         printf("feature 0 is at %f, %f, %f\n", x, y, z);
 
-        // Output to text file in format <x>, <y>, <z>
-        stereo3D << x << ", " << y << ", " << z << endl;
+        // Extract RGB values from pixel
+        Point3_<uchar> *p = right_img.ptr<Point3_<uchar> >(row,col); // TODO: does this work?
+
+        // Output to text file in format <x>, <y>, <z>, <R>, <G>, <B>
+        stereo3D << x << ", " << y << ", " << z << ", " << p->z << ", " << p->y << ", " << p->x << endl
     }
     stereo3D.close();
+
 
     // Done with current_features array, ok to free it
     free(current_features);
