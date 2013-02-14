@@ -12,6 +12,9 @@
 *.la
 *.a
 
+# Matlab files
+*.asv
+
 # Generated build files
 lab01/lab01_material/part1/me132_tutorial_player/me132_tutorial_0
 lab01/lab01_material/part1/me132_tutorial_player/me132_tutorial_1
