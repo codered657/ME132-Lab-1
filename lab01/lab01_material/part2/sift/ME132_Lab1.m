@@ -74,8 +74,66 @@ disp(strcat('Time for figure B ', num2str(t)));
 
 %% Figure C
 tic;
-for i = 3:num_sens
-    object_detector(sift_data_sens{i}, sift_data_obj);
+freq_list = cell(num_sens,1);
+feature_list = cell(num_sens,1);
+for i = 1:num_sens
+    [freq_list{i} feature_list{i}] = object_detector(sift_data_sens{i}, sift_data_obj);
 end
 t = toc;
 disp(strcat('Time for figure C ', num2str(t)));
+
+%% Figure D, E, F
+for i = 1:num_sens
+    % Determine which objects are "detected."
+    detected_threshold = 60;
+    num_obj = 1:length(freq_list{i});
+    num_obj = num_obj(freq_list{i} > detected_threshold);
+    for j = num_obj
+        % Figure D
+        obj_feature = feature_list{i}(:, feature_list{i}(1,:) == j);
+        figure;
+        colors = hsv(length(obj_feature));
+        subplot(1,2,2);
+        imshow(sensor_list{i}.rgb);
+        hold on
+        for k = 1:size(obj_feature,2)
+            plot(obj_feature(2,k),obj_feature(3,k),'o','MarkerEdgeColor',colors(k,:))
+        end
+        subplot(1,2,1);
+        imshow(obj_list{j});
+        hold on
+        for k = 1:size(obj_feature,2)
+            plot(obj_feature(4,k),obj_feature(5,k),'o','MarkerEdgeColor',colors(k,:))
+        end
+        hold off
+        % Figure E
+        feature_match_list = correspondence_plot(sift_data_sens{i}, sift_data_obj{j},...
+                                                 sensor_list{i}.rgb, obj_list{j});
+       % Figure F
+       H = ransac(feature_match_list, 0.999, 0.5)
+        objX = sift_data_obj{j}{2};
+        objY = sift_data_obj{j}{1};
+        sensX = zeros(length(objX),1);
+        sensY = zeros(length(objX),1);
+        for k = 1:length(objX)
+            reproj = (H + eye(3))^-1 * [objX(k,1); objY(k,1); 1];
+            sensX(k) = reproj(1,1);
+            sensY(k) = reproj(2,1);
+        end
+        figure;
+        colors = hsv(length(objX));
+        subplot(1,2,2);
+        imshow(sensor_list{i}.rgb);
+        hold on
+        for k = 1:length(objX)
+            plot(sensX(k), sensY(k),'o','MarkerEdgeColor',colors(k,:))
+        end
+        subplot(1,2,1);
+        imshow(obj_list{j});
+        hold on
+        for k = 1:length(objX)
+            plot(objX(k), objY(k),'o','MarkerEdgeColor',colors(k,:))
+        end
+        hold off
+    end
+end
