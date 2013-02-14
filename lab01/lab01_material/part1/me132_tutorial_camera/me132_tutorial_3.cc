@@ -203,6 +203,7 @@ int main(int argc, char** argv)
     // let's release those image containers we setup earlier
     cvReleaseImage(&right);
     cvReleaseImage(&left);
+    cvReleaseImage(&right_img_final);
 
     // finally, let's destroy those windows we setup to display the images
     cvDestroyWindow("Left");
