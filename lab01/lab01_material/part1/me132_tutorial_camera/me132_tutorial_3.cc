@@ -12,6 +12,7 @@
 
 // now include the opencv header files
 #include <opencv/cv.h>
+#include "opencv/cxcore.h"
 #include <opencv/highgui.h>
 
 // finally, include the bumblebee header file
@@ -83,7 +84,9 @@ int main(int argc, char** argv)
     int num_current_features;
 
     // Allocate for final right image
-    Mat right_img_final;
+    //CvMat *right_img_final;
+    //CvMat* temp_mat = cvCreateMat(height, width, CV_8UC3);
+    IplImage *right_img_final = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
     
     // now let's enter a while loop to continually capture from the
     // camera and display the image
@@ -104,7 +107,8 @@ int main(int argc, char** argv)
         bb.getRectifiedColorBuffer((unsigned char*)right->imageData, BB_RIGHT);
 
         // Save copy of right image before its modified with SIFT data
-        right_img_final = Mat(right);
+        //right_img_final = cvGetMat(right, temp_mat);
+        right_img_final = cvCloneImage(right);
         
         // lets grab the disparity buffer too along with the row size
         int rowinc;
@@ -179,20 +183,20 @@ int main(int argc, char** argv)
         printf("feature 0 is at %f, %f, %f\n", x, y, z);
 
         // Extract RGB values from pixel
-        Point3_<uchar> *p = right_img.ptr<Point3_<uchar> >(row,col); // TODO: does this work?
+        //Point3_<uchar> *p = right_img_final.ptr<Point3_<uchar> >(row,col); // TODO: does this work?
+        uchar blue = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*((int)y)))[((int)x)*3];
+        uchar green = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*((int)y)))[((int)x)*3+1];
+        uchar red = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*((int)y)))[((int)x)*3+2];
 
         // Output to text file in format <x>, <y>, <z>, <R>, <G>, <B>
-        stereo3D << x << ", " << y << ", " << z << ", " << p->z << ", " << p->y << ", " << p->x << endl
+       	stereo3D << x << ", " << y << ", " << z << ", " << red << ", " << green << ", " << blue << endl;
     }
     stereo3D.close();
 
 
     // Done with current_features array, ok to free it
     free(current_features);
-
-    // Save right stereo image
-    imwrite("right_stereo_RGB.jpg", right_img_final);
-
+    
     // cleanup, close, and finish the bumblebee camera
     bb.fini();
 
