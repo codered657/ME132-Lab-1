@@ -24,6 +24,14 @@
 #include <sift/kdtree.h>
 #include <sift/xform.h>
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+using namespace cv;
+
 // this is the beginning of the "main" program
 int main(int argc, char** argv)
 {
@@ -67,6 +75,9 @@ int main(int argc, char** argv)
     cvNamedWindow("Left",1);
     cvNamedWindow("Right",1);
     
+    struct feature* current_features;
+    int num_current_features;
+
     // now let's enter a while loop to continually capture from the
     // camera and display the image
     while(true)
@@ -92,8 +103,8 @@ int main(int argc, char** argv)
         // extract SIFT features for the small right image only, plot them,
         // then calculate the 3d point to the first feature then delete them
         // to avoid memory leak
-        struct feature* current_features = NULL;
-        int num_current_features = sift_features(right, &current_features);
+        current_features = NULL;
+        num_current_features = sift_features(right, &current_features);
         printf("detected %d features ... \n", num_current_features);
         for(int i=0; i<num_current_features; i++)
         {
@@ -109,19 +120,19 @@ int main(int argc, char** argv)
             
             // calculate distance to first feature and display it's XYZ in right
             // camera ref frame
-            if(i==0)
-            {
-                int row, col;
-                unsigned short disp;
-                float x, y, z;
-                row = (int)current_features[i].img_pt.y;
-                col = (int)current_features[i].img_pt.x;
-                disp = disparity_buffer[row*width + col];
-                bb.disparityToXYZ(row, col, disp, &x, &y, &z);
-                printf("feature 0 is at %f, %f, %f\n", x, y, z);
-            }
+            // TODO: remove?
+            //if(i==0)
+            //{
+            //    int row, col;
+            //    unsigned short disp;
+            //    float x, y, z;
+            //    row = (int)current_features[i].img_pt.y;
+            //    col = (int)current_features[i].img_pt.x;
+            //    disp = disparity_buffer[row*width + col];
+            //    bb.disparityToXYZ(row, col, disp, &x, &y, &z);
+            //    printf("feature 0 is at %f, %f, %f\n", x, y, z);
+            //}
         }
-        free(current_features);
         
         // now let's display these captured images in the display windows we setup
         // earlier
@@ -134,10 +145,57 @@ int main(int argc, char** argv)
         int pressed_key = cvWaitKey(3); 
         if(pressed_key>0)
         {
+            // Exit, keeping current_features array until it is output to file
             break;      
+        } else {
+            // If not done, free current list for next timestep
+            free(current_features);
         }
     }
     
+    ofstream RGB_right_stereo("RGB_right_stereo.txt");
+    ofstream 3D_stereo("3D_stereo.txt");
+
+    // Loop through all values in disparity buffer, converting to 3D stero points
+    for (int i = 0; i < num_current_features; i++) {
+        int row, col;
+        unsigned short disp;
+        float x, y, z;
+        row = (int)current_features[i].img_pt.y;
+        col = (int)current_features[i].img_pt.x;
+        disp = disparity_buffer[row*width + col];
+        bb.disparityToXYZ(row, col, disp, &x, &y, &z);
+        printf("feature 0 is at %f, %f, %f\n", x, y, z);
+
+        // Output to text file in format <x>, <y>, <z>
+        3D_stereo << x << ", " << y << ", " << z << endl;
+
+    }
+
+    // Done with current_features array, ok to free it
+    free(current_features);
+
+    // TODO: convert IplImage to a type that isn't trash
+    Mat right_img(right);
+
+    // Write RGB pixels from right image to text file
+    for (int i = 0; i < right_img.rows; i++) {
+
+        for (int j = 0; j < right_img.cols; j++) {
+
+            // Extract RGB values from pixel
+            Point3_<uchar> *p = right_img.ptr<Point3_<uchar> >(i,j); // TODO: does this work?
+
+            // Output to file in format <i>, <j>, <R>, <G>, <B>
+            RGB_right_stereo << i << ", " << j << ", " << p->z << ", " << p->y << ", " << p->x << endl
+        }
+
+    }
+
+    // Close all files
+    RGB_right_stereo.close();
+    3D_stereo.close();
+
     // cleanup, close, and finish the bumblebee camera
     bb.fini();
     
