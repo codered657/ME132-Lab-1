@@ -1,6 +1,6 @@
 /*
- * This program grabs the left and right image (fast) from the bumblebee 
- * camera and displays it using opencv. There is no stereo processing 
+ * This program grabs the left and right image (fast) from the bumblebee
+ * camera and displays it using opencv. There is no stereo processing
  * done here which is why it is particularly fast. SIFT features are also
  * extracted and plotted for the right camera only.
  */
@@ -37,69 +37,79 @@ int main(int argc, char** argv)
 {
     // what's the ID of the camera?
     int ID = 5020066;
-    
-    if(argc>1)
-       ID = atoi(argv[1]);
+
+    if (argc > 1)
+    {
+        ID = atoi(argv[1]);
+    }
     else
     {
-       fprintf(stderr, "missing argument. Need model ID. Abort. \n");
-       return -1;
+        fprintf(stderr, "missing argument. Need model ID. Abort. \n");
+        return -1;
     }
-    
+
     // let's create the bumblebee object with some default parameters
     // - the 2 is for stereo downscaling (1 means full image stereo, 2
     //   means half image)
     // - the true is a boolean indicating we're using a color camera
     int scale = 2;
     bool color = true;
-    BumbleBee bb(ID,scale,color); 
-    
+    BumbleBee bb(ID, scale, color);
+
     // first let's initialize the bumblebee but stop the program if the
-    // initialization fails 
-    if(bb.init()<0)
-       return(-1);  
-    
+    // initialization fails
+    if (bb.init() < 0)
+    {
+        return -1;
+    }
+
     // what's the width and height of the camera? -- remember to scale it
-    int width = bb.getImageWidth()/scale;
-    int height = bb.getImageHeight()/scale; 
-    
+    int width = bb.getImageWidth() / scale;
+    int height = bb.getImageHeight() / scale;
+
     // now let's create an opencv image container to hold the left &
     // right image
-    IplImage *left = cvCreateImage(cvSize(width,height), IPL_DEPTH_8U, 3);
-    IplImage *right = cvCreateImage(cvSize(width,height), IPL_DEPTH_8U, 3);
-    
+    IplImage *left = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    IplImage *right = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+
     // let's create a buffer to hold the disparity image
     unsigned short disparity_buffer[width*height];
-    
+
     // let's create two windows to display the left and right images
-    cvNamedWindow("Left",1);
-    cvNamedWindow("Right",1);
-    
+    cvNamedWindow("Left", 1);
+    cvNamedWindow("Right", 1);
+
     struct feature* current_features;
     int num_current_features;
 
+    // Allocate for final right image
+    Mat right_img_final;
+    
     // now let's enter a while loop to continually capture from the
     // camera and display the image
     while(true)
     {
         // first thing we do is call the bumblebee to capture the images
         // and exit if the capture fails
-        if(bb.capture()<0)
+        if (bb.capture() < 0)
         {
             printf("capture failed!\n");
             break;
         }
-        
+
         // if here, then the capture succeeded so let's grab the left and
         // right rectified images and place them into the opencv containers
         // we setup earlier
         bb.getRectifiedColorBuffer((unsigned char*)left->imageData, BB_LEFT);
         bb.getRectifiedColorBuffer((unsigned char*)right->imageData, BB_RIGHT);
+
+        // Save copy of right image before its modified with SIFT data
+        right_img_final = Mat(right);
         
         // lets grab the disparity buffer too along with the row size
         int rowinc;
         bb.getDisparityImage(disparity_buffer, &rowinc);
-        
+
         // extract SIFT features for the small right image only, plot them,
         // then calculate the 3d point to the first feature then delete them
         // to avoid memory leak
@@ -117,7 +127,7 @@ int main(int argc, char** argv)
                      8,
                      0
                      );
-            
+
             // calculate distance to first feature and display it's XYZ in right
             // camera ref frame
             // TODO: remove?
@@ -133,80 +143,63 @@ int main(int argc, char** argv)
             //    printf("feature 0 is at %f, %f, %f\n", x, y, z);
             //}
         }
-        
+
         // now let's display these captured images in the display windows we setup
         // earlier
         cvShowImage("Left", left);
         cvShowImage("Right", right);
-        
+
         // now let's handle if a key was pressed, waiting up to 2 ms for it
         // if no key is pressed, then pressed_key < 0; otherwise, we exit on a
         // pressed key
-        int pressed_key = cvWaitKey(3); 
-        if(pressed_key>0)
+        int pressed_key = cvWaitKey(3);
+        if (pressed_key > 0)
         {
             // Exit, keeping current_features array until it is output to file
-            break;      
-        } else {
+            break;
+        }
+        else
+        {
             // If not done, free current list for next timestep
             free(current_features);
         }
     }
-    
-    ofstream RGB_right_stereo("RGB_right_stereo.txt");
-    ofstream 3D_stereo("3D_stereo.txt");
 
     // Loop through all values in disparity buffer, converting to 3D stero points
-    for (int i = 0; i < num_current_features; i++) {
+    ofstream stereo3D("right_stereo_3D.txt");
+    for (int i = 0; i < num_current_features; i++)
+    {
         int row, col;
         unsigned short disp;
         float x, y, z;
         row = (int)current_features[i].img_pt.y;
         col = (int)current_features[i].img_pt.x;
-        disp = disparity_buffer[row*width + col];
+        disp = disparity_buffer[row * width + col];
         bb.disparityToXYZ(row, col, disp, &x, &y, &z);
         printf("feature 0 is at %f, %f, %f\n", x, y, z);
 
         // Output to text file in format <x>, <y>, <z>
-        3D_stereo << x << ", " << y << ", " << z << endl;
-
+        stereo3D << x << ", " << y << ", " << z << endl;
     }
+    stereo3D.close();
 
     // Done with current_features array, ok to free it
     free(current_features);
 
-    // TODO: convert IplImage to a type that isn't trash
-    Mat right_img(right);
-
-    // Write RGB pixels from right image to text file
-    for (int i = 0; i < right_img.rows; i++) {
-
-        for (int j = 0; j < right_img.cols; j++) {
-
-            // Extract RGB values from pixel
-            Point3_<uchar> *p = right_img.ptr<Point3_<uchar> >(i,j); // TODO: does this work?
-
-            // Output to file in format <i>, <j>, <R>, <G>, <B>
-            RGB_right_stereo << i << ", " << j << ", " << p->z << ", " << p->y << ", " << p->x << endl
-        }
-
-    }
-
-    // Close all files
-    RGB_right_stereo.close();
-    3D_stereo.close();
+    // Save right stereo image
+    imwrite("right_stereo_RGB.jpg", right_img_final);
 
     // cleanup, close, and finish the bumblebee camera
     bb.fini();
-    
+
     // let's release those image containers we setup earlier
-    cvReleaseImage(&right);   
+    cvReleaseImage(&right);
     cvReleaseImage(&left);
-    
+
     // finally, let's destroy those windows we setup to display the images
     cvDestroyWindow("Left");
     cvDestroyWindow("Right");
-    
+
     return 0;
 }
 
