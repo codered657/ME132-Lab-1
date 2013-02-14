@@ -25,6 +25,3 @@ y_room = y + range .* sin(yaw + bearing);
 figure;
 scatter(x_room, y_room, 2.5);
 title('Room Points from Laser Scan Data')
-
-% Read in data
-
