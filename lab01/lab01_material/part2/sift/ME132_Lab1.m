@@ -44,7 +44,7 @@ end
 for i = 1:num_sens
     sift_data_sens{1} = cell(5, 1);
 end
-% Parse out data from sift_detector
+% Parse out data from sift_detector as row, cel, scale, orientation, descriptors
 for i = 1:num_obj
     [sift_data_obj{i}{1}, sift_data_obj{i}{2}, sift_data_obj{i}{3}, ...
         sift_data_obj{i}{4}, sift_data_obj{i}{5}] = sift_detector(obj_list{i});
@@ -83,7 +83,7 @@ t = toc;
 disp(strcat('Time for figure C ', num2str(t)));
 
 %% Figure D, E, F
-for i = 1:1
+for i = 1:num_sens
     % Determine which objects are "detected."
     detected_threshold = 60;
     num_obj = 1:length(freq_list{i});
@@ -112,9 +112,10 @@ for i = 1:1
         % Figure F
         H = ransac(feature_match_list, 0.999, 0.5)
         xy = H^-1 * [0; 0; 1];
-        xy = xy(1:2) / xy(3)
-        x_max = size(sensor_list{i}.rgb,2);
-        y_max = size(sensor_list{i}.rgb,1);
+        rowcol = xy(1:2) / xy(3)
+        xyz = H^-1 * [sensor_list{i}.XYZ(round(rowcol(1)), round(rowcol(2)), 1); ...
+                      sensor_list{i}.XYZ(round(rowcol(1)), round(rowcol(2)), 2); ...
+                      sensor_list{i}.XYZ(round(rowcol(1)), round(rowcol(2)), 3)]
         objX = sift_data_obj{j}{2};
         objY = sift_data_obj{j}{1};
         sensX = zeros(length(objX),1);
