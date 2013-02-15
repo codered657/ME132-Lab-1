@@ -4,7 +4,7 @@ function [feature_match_array] = correspondence_plot(sift_data_image, sift_obj, 
 % number of matches each image in the database has with the sensor image.
 
 % Define constants for function
-ratio_threshold = 0.5;
+ratio_threshold = 0.6;
 feature_match_array = zeros(0,4);
 
 % For each feature in the sensor image, look through each of the features

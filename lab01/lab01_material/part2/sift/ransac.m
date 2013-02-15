@@ -13,7 +13,7 @@ S = log(1-p_suc)/log(1-p_in^k);
 
 % Define constants for function
 threshold = 5;
-num_points = size(dataset,2);
+num_points = size(dataset,1);
 
 % Initialize search
 count_max = 0;
@@ -35,31 +35,34 @@ for s = 1:ceil(S)
     Y2 = Q(2,indices);
     
     % Determine the H matrix from the random sample of points.
-    
-    points = [X2(1); Y2(1); X2(2); Y2(2); X2(3); Y2(3); X2(4); Y2(4)];
-
-    M = zeros(2*k);
+    M = zeros(2*k,2*k+1);
+    b = zeros(2*k,1);
     m = 1;
     for i = 1:2:2*k
-        M([i i+1],:) = [X1(m), Y1(m), 1, 0, 0, 0, -X2(m)*X1(m), -X2(m)*Y1(m);...
-                        0, 0, 0, X1(m), Y1(m), 1, -Y2(m)*X1(m), -Y2(m)*Y1(m)];
+        M([i i+1],:) = [X1(m), Y1(m), 1, 0, 0, 0, -X2(m)*X1(m), -X2(m)*Y1(m), -X2(m);...
+                        0, 0, 0, X1(m), Y1(m), 1, -Y2(m)*X1(m), -Y2(m)*Y1(m), -Y2(m)];
+        b(i  ) = X2(m) - X1(m);
+        b(i+1) = Y2(m) - Y1(m);
         m = m + 1;
     end
-    H_vector = M\points;
+    H_vector = linsolve(M(:,1:8), b);
+    H_mat = reshape([H_vector; 0], 3, 3);
+    H_mat = H_mat' + eye(3);
     
     % Calculate the reprojection error between a pair of corresponding feature
     % points (P,Q).
     error = zeros(num_points,1);
-    for e = 1:length(dataset)
-        HP = [(H_vector(1,1)*P(1,e)+H_vector(2,1)*P(2,e)+H_vector(3,1))/(H_vector(7,1)*P(1,e)+H_vector(8,1)*P(2,e)+1); (H_vector(4,1)*P(1,e)+H_vector(5,1)*P(2,e)+H_vector(6,1))/(H_vector(7,1)*P(1,e)+H_vector(8,1)*P(2,e)+1)];
-        error(e) = (sum((Q(:,e) - HP).^2,1)).^0.5;
+    for e = 1:num_points
+        HP = H_mat * [P(:,e); 1];
+        HP = HP / HP(3);
+        error(e) = (sum((Q(:,e) - HP(1:2)).^2,1)).^0.5;
     end
     
     % Get number of elements with error below the threshold
     count = length(error(error < threshold));
     
     if count > count_max
-        H = reshape([H_vector, ;0], 3, 3);
+        H = H_mat;
         count_max = count;
         %error_list = error;
     end

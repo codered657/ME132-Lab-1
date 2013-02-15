@@ -83,7 +83,7 @@ t = toc;
 disp(strcat('Time for figure C ', num2str(t)));
 
 %% Figure D, E, F
-for i = 1:num_sens
+for i = 1:1
     % Determine which objects are "detected."
     detected_threshold = 60;
     num_obj = 1:length(freq_list{i});
@@ -109,28 +109,34 @@ for i = 1:num_sens
         % Figure E
         feature_match_list = correspondence_plot(sift_data_sens{i}, sift_data_obj{j},...
                                                  sensor_list{i}.rgb, obj_list{j});
-       % Figure F
-       H = ransac(feature_match_list, 0.999, 0.5)
+        % Figure F
+        H = ransac(feature_match_list, 0.999, 0.5)
+        xy = H^-1 * [0; 0; 1];
+        xy = xy(1:2) / xy(3)
+        x_max = size(sensor_list{i}.rgb,2);
+        y_max = size(sensor_list{i}.rgb,1);
         objX = sift_data_obj{j}{2};
         objY = sift_data_obj{j}{1};
         sensX = zeros(length(objX),1);
         sensY = zeros(length(objX),1);
         for k = 1:length(objX)
-            reproj = (H + eye(3))^-1 * [objX(k,1); objY(k,1); 1];
-            sensX(k) = reproj(1,1);
-            sensY(k) = reproj(2,1);
+            reproj = H^-1 * [objY(k,1); objX(k,1); 1];
+            sensX(k) = reproj(2) / reproj(3);
+            sensY(k) = reproj(1) / reproj(3);
         end
         figure;
         colors = hsv(length(objX));
         subplot(1,2,2);
         imshow(sensor_list{i}.rgb);
         hold on
+        plot(xy(2), xy(1), 'x', 'MarkerEdgeColor', 'k') % Plot corner as black x
         for k = 1:length(objX)
-            plot(sensX(k), sensY(k),'o','MarkerEdgeColor',colors(k,:))
+            plot(sensX(k), sensY(k),'o','MarkerEdgeColor',colors(k,:)) % I swapped the X and Y here, to make the figure shown. Can you flip the plot maybe across the y-axis maybe?
         end
         subplot(1,2,1);
         imshow(obj_list{j});
         hold on
+        plot(0, 0, 'x', 'MarkerEdgeColor', 'k') % Plot corner as black x
         for k = 1:length(objX)
             plot(objX(k), objY(k),'o','MarkerEdgeColor',colors(k,:))
         end
