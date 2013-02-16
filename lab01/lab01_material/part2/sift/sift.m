@@ -9,16 +9,16 @@
 %         descriptor for one of the K keypoints.  The descriptor is a vector
 %         of 128 values normalized to unit length.
 %     locs: K-by-4 matrix, in which each row has the 4 values for a
-%         keypoint location (row, column, scale, orientation).  The 
+%         keypoint location (row, column, scale, orientation).  The
 %         orientation is in the range [-PI, PI] radians.
 %
-% Credits: Thanks for initial version of this program to D. Alvaro and 
+% Credits: Thanks for initial version of this program to D. Alvaro and
 %          J.J. Guerrero, Universidad de Zaragoza (modified by D. Lowe)
 
 function [descriptors, locs] = sift(grayscale)
 
 image = grayscale;
-[rows, cols] = size(image); 
+[rows, cols] = size(image);
 
 % Convert into PGM imagefile
 f = fopen('tmp.pgm', 'w');
@@ -64,7 +64,7 @@ for i = 1:num
         error('Invalid keypoint file format');
     end
     locs(i, :) = vector(1, :);
-    
+
     [descrip, count] = fscanf(g, '%d', [1 len]);
     if (count ~= 128)
         error('Invalid keypoint file value.');

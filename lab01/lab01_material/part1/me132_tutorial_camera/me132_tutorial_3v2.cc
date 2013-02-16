@@ -65,7 +65,7 @@ int main(int argc, char** argv)
     // now build a kd-tree to hold the database features
     struct kd_node* kd_tree = NULL;
     kd_tree = kdtree_build(database_features, num_database_features);
-    
+
     // let's create the bumblebee object with some default parameters
     // - the 2 is for stereo downscaling (1 means full image stereo, 2
     //   means half image)
@@ -101,8 +101,6 @@ int main(int argc, char** argv)
     int num_current_features;
 
     // Allocate for final right image
-    //CvMat *right_img_final;
-    //CvMat* temp_mat = cvCreateMat(height, width, CV_8UC3);
     IplImage *right_img_final = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 
     // Create a window to display the image
@@ -131,7 +129,7 @@ int main(int argc, char** argv)
         // Save copy of right image before its modified with SIFT data
         //right_img_final = cvGetMat(right, temp_mat);
         right_img_final = cvCloneImage(right);
-        
+
         // lets grab the disparity buffer too along with the row size
         int rowinc;
         bb.getDisparityImage(disparity_buffer, &rowinc);
@@ -166,7 +164,8 @@ int main(int argc, char** argv)
         rect.width = right->width;
         rect.height = right->height;
         cvSetImageROI(display_img, rect);
-        cvCvtColor(right, display_img, CV_GRAY2RGB);
+        //cvCvtColor(right, display_img, CV_GRAY2RGB);
+        cvCopy(right, display_img);
         cvResetImageROI(display_img);
 
         // Draw the database features (features from reference image)
@@ -255,7 +254,7 @@ int main(int argc, char** argv)
 
         }
 
-        // Show the display image 
+        // Show the display image
         cvShowImage("SIFT", display_img);
 
         // now let's display these captured images in the display windows we setup
@@ -284,25 +283,25 @@ int main(int argc, char** argv)
 
     // Loop through all values in disparity buffer, converting to 3D stero points
     ofstream stereo3D("right_stereo_3D.txt");
-    for (int i = 0; i < num_current_features; i++)
+    cout << num_current_features;
+    for (int row = 0; row < height; row++)
     {
-        int row, col;
-        unsigned short disp;
-        float x, y, z;
-        row = (int)current_features[i].img_pt.y;
-        col = (int)current_features[i].img_pt.x;
-        disp = disparity_buffer[row * width + col];
-        bb.disparityToXYZ(row, col, disp, &x, &y, &z);
-        printf("feature 0 is at %f, %f, %f\n", x, y, z);
+    	for (int col = 0; col < width; col++)
+       {
+            unsigned short disp;
+            float x, y, z;
+            disp = disparity_buffer[row * height + col];
+            bb.disparityToXYZ(row, col, disp, &x, &y, &z);
 
-        // Extract RGB values from pixel
-        //Point3_<uchar> *p = right_img_final.ptr<Point3_<uchar> >(row,col); // TODO: does this work?
-        uchar blue = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*((int)y)))[((int)x)*3];
-        uchar green = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*((int)y)))[((int)x)*3+1];
-        uchar red = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*((int)y)))[((int)x)*3+2];
+            // Extract RGB values from pixel
+            uchar blue = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*row))[col*3];
+            uchar green = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*row))[(col*3)+1];
+            uchar red = ((uchar*)(right_img_final->imageData + right_img_final->widthStep*row))[(col*3)+2];
 
-        // Output to text file in format <x>, <y>, <z>, <R>, <G>, <B>
-       	stereo3D << x << ", " << y << ", " << z << ", " << red << ", " << green << ", " << blue << endl;
+            // Output to text file in format <x>, <y>, <z>, <R>, <G>, <B>
+            stereo3D << x << ", " << y << ", " << z << ", " << (unsigned int) red
+                     << ", " << (unsigned int) green << ", " << (unsigned int) blue << endl;
+        }
     }
     stereo3D.close();
 
@@ -325,4 +324,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-

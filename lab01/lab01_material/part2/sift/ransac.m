@@ -2,7 +2,7 @@ function H = ransac(dataset, p_suc, p_in)
 %RANSAC This function takes a number of points required (n), a set of
 %image feature points, the probability of success, and the probability of a
 %sample being an inlier as input. It determines the best fit for the data and
-%which points are outliers. The function outputs the data set without the 
+%which points are outliers. The function outputs the data set without the
 %outliers.
 
 % Determine S (number of trials needed to select best H matrix) and set a
@@ -33,7 +33,7 @@ for s = 1:ceil(S)
     Y1 = P(2,indices);
     X2 = Q(1,indices);
     Y2 = Q(2,indices);
-    
+
     % Determine the H matrix from the random sample of points.
     M = zeros(2*k,2*k+1);
     b = zeros(2*k,1);
@@ -48,7 +48,7 @@ for s = 1:ceil(S)
     H_vector = linsolve(M(:,1:8), b);
     H_mat = reshape([H_vector; 0], 3, 3);
     H_mat = H_mat' + eye(3);
-    
+
     % Calculate the reprojection error between a pair of corresponding feature
     % points (P,Q).
     error = zeros(num_points,1);
@@ -57,10 +57,10 @@ for s = 1:ceil(S)
         HP = HP / HP(3);
         error(e) = (sum((Q(:,e) - HP(1:2)).^2,1)).^0.5;
     end
-    
+
     % Get number of elements with error below the threshold
     count = length(error(error < threshold));
-    
+
     if count > count_max
         H = H_mat;
         count_max = count;
@@ -74,7 +74,7 @@ end
 
 % inliers = zeros(0,4);
 % outliers = zeros(0,4);
-% 
+%
 % for j = 1:num_points
 %     if error_list(j) < threshold
 %         inliers = cat(1,inliers,dataset(j,:));

@@ -173,17 +173,24 @@
 Code runs as expected. Speed and turnrate changed to 0.1.
 
 \subsection{Tutorial 1}
-The C++ code dumps the laser scan data into \verb|data.txt|. This data is the robot pose and laser scan data which is in the form: \verb|[x, y, yaw, range, bearing]| and can be plotted with the \verb|me132_tutorial_1_plot.m| file by calling the function with the correct filename. Any points that have a range greater than or equal to 8 are ignored to minimize noise and false walls.
+The C++ code dumps the laser scan data into \verb|data.txt|. This data is the robot pose and laser scan data which is in the form: \verb|[x, y, yaw, range, bearing]| and can be plotted with the \verb|me132_tutorial_1_plot.m| file by calling the function with the correct filename. Any points that have a range greater than or equal to 8 are ignored to minimize noise and false walls.\\
+The data from the robot demo is saved in \verb|room_data.txt| and results in the following image:
+\begin{figure}[H]
+\begin{center} \includegraphics[width=0.8\textwidth]{lab01/lab01_material/part1/me132_tutorial_player/Room.jpg} \end{center} \label{tut1}
+\end{figure}
 
 \subsection{Tutorial 2}
 When we execute this program we obtain the below image. We can see that the features in both the test and reference image are matched with lines connecting the feature pairs.
 \begin{figure}[H]
-\begin{center} \includegraphics[height=0.8\textwidth]{lab01/lab01_material/part1/me132_tutorial_camera/capture.png} \end{center} \label{name}
+\begin{center} \includegraphics[height=0.8\textwidth]{lab01/lab01_material/part1/me132_tutorial_camera/capture.png} \end{center} \label{tut2}
 \end{figure}
 
 \subsection{Tutorial 3}
-We obtain results similar to the above, except that the two images update from a stereo camera and we can see features matched between them. Alternatively, a version named \verb|me132_tutorial_3v2| is available which fixes a reference image with a given file and compares it to the right image from the stereo camera. The output from these are saved in \verb|right_stereo_3D.txt|.\\
-The data is saved in the form \verb|[x, y, z, r, g, b]| as .csv file to be plotted by \verb|me132_tutorial_3_plot.m|.
+We obtain results similar to the above, except that the two images update from a stereo camera and we can see features matched between them. Alternatively, a version named \verb|me132_tutorial_3v2| is available which fixes a reference image with a given file and compares it to the right image from the stereo camera. The output from these are saved in \verb|right_stereo_3D.txt|. The data is saved in the form \verb|[x, y, z, r, g, b]| as .csv file to be plotted by \verb|me132_tutorial_3_plot.m|.\\
+The data from the robot demo is saved in \verb|data.txt| and results in the following image:
+\begin{figure}[H]
+\begin{center} \includegraphics[width=0.8\textwidth]{lab01/lab01_material/part1/me132_tutorial_camera/tutorial3_image.jpg} \end{center} \label{tut3}
+\end{figure}
 
 \section{Part 2}
 
@@ -195,7 +202,7 @@ Note: object image 2 and 12 had to be scaled down since \verb|siftWin32.exe| run
 All files are inside the \verb|sift| folder. Images are labeled with the figure letter and a number to indicate the corresponding example or object image. The input object images have a copy in the \verb|object_imgs - scale| folder which are reduced to 600 pixels across.\\
 For the feature matching across two images, we plot the features in matching colors. For Figure F, we can see that the homography transform works by comparing the color regions for each feature.
 
-\subsection{Results}
+\subsection{Results - Test}
 
 The output from a run on my computer. The homography matrix and the XY coordinates correspond to example images 1-3 in order.
 \begin{verbatim}
@@ -252,6 +259,23 @@ H =  2.4     -5.5    1433.9
      0.0     -0.0       1.0
 rowcol = [134.6543, 321.5502]
 xyz = [ 83.0928, 198.4456,   0.6172]
+\end{verbatim}
+
+\subsection{Results - Demo}
+When running on the example 10 image, we obtain the following homography transform results for the two objects detected (3 and 11) respectively. Note that for speed during the demo, the scaled versions of the object images.
+\begin{verbatim}
+OBJECT 3:
+H = 2.9339   -0.0841 -390.1813
+    0.1445    2.8881 -109.2425
+    0.0001   -0.0001    1.0000
+rowcol = [133.8839,  31.1262]
+xyz = [ 71.9144,  16.7180, 0.5380]
+OBJECT 11:
+H =  2.6    2.0   -1082.6
+    -1.9    2.5    -242.0
+     0.0    0.0       1.0
+rowcol = [220.0172, 259.3230]
+xyz = [106.2697, 125.2662, 0.4831]
 \end{verbatim}
 
 \end{document}

@@ -16,8 +16,9 @@ obj_files = {'../object_imgs/object_01.jpg'; '../object_imgs/object_02.jpg'; ...
              '../object_imgs/object_09.jpg'; '../object_imgs/object_10.jpg'; ...
              '../object_imgs/object_11.jpg'; '../object_imgs/object_12.jpg';};
 num_obj = length(obj_files);
-sensor_files = {'../sensor_data/example_01.mat'; '../sensor_data/example_02.mat'; ...
-                '../sensor_data/example_03.mat'};
+sensor_files = {'../sensor_data/example_10.mat'};
+% sensor_files = {'../sensor_data/example_01.mat'; '../sensor_data/example_02.mat'; ...
+%                 '../sensor_data/example_03.mat'};
 num_sens = length(sensor_files);
 
 %% Load object images and sensor data
@@ -132,7 +133,7 @@ for i = 1:num_sens
         hold on
         plot(xy(2), xy(1), 'x', 'MarkerEdgeColor', 'k') % Plot corner as black x
         for k = 1:length(objX)
-            plot(sensX(k), sensY(k),'o','MarkerEdgeColor',colors(k,:)) % I swapped the X and Y here, to make the figure shown. Can you flip the plot maybe across the y-axis maybe?
+            plot(sensX(k), sensY(k),'o','MarkerEdgeColor',colors(k,:))
         end
         subplot(1,2,1);
         imshow(obj_list{j});

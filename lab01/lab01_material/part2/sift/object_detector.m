@@ -5,8 +5,8 @@ function [freq, feature_list] = object_detector(sift_data_image, sift_obj_list)
 %outputs a histogram showing the number of matches for each reference
 %object.
 %
-%   Similarities are defined using the sum of square differences and the 
-%best match is found by using a ratio threshold for comparing the ratio of 
+%   Similarities are defined using the sum of square differences and the
+%best match is found by using a ratio threshold for comparing the ratio of
 %the similarity of the first and second best match.
 
 % Define constants in problem
@@ -36,7 +36,7 @@ for j = 1:length(descriptors_s)
         end
         ssd_all = [ssd_all, ssd];
     end
-    
+
     % Set the ratio threshold and minimums.
     sorted_ssd = sort(ssd_all);
     min_ssd = sorted_ssd(1);

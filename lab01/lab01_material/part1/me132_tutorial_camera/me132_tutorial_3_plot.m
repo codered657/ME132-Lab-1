@@ -9,7 +9,7 @@ y = data(:,2);
 z = data(:,3);
 r = data(:,4) / 255;
 g = data(:,5) / 255;
-b = data(:,4) / 255;
+b = data(:,6) / 255;
 
 % Plot room data
 figure;
